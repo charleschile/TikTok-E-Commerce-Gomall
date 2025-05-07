@@ -39,3 +39,6 @@ volo：rust rpc框架
 #### **容器与编排**
 - **Docker**：容器化技术，使应用能够在任意环境一致运行。
 - **K8s（Kubernetes）**：容器编排平台，用于自动部署、扩展和管理容器应用。
+
+
+![design](img/design.png)
