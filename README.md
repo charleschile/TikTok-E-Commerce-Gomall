@@ -60,6 +60,7 @@ vscode插件
 | **YAML**             | 支持 YAML 文件语法高亮、校验、自动补全等功能，常用于配置文件。|
 | **vscode-proto3**    | 提供 `.proto` 文件（Protocol Buffers v3）语法支持，包括高亮和代码提示。|
 | **Makefile Tools**   | 支持 `Makefile` 的语法高亮、构建任务与调试操作。|
+| Thrift | 支持thrift语法高亮 |
 
 
 终端插件
@@ -165,6 +166,225 @@ go mod tidy 命令的作用是整理和清理项目的依赖关系。具体功�
 
 
 ![helloworld](img/helloworld.png)
+
+
+### 03脚手架scaffold
+IDL: interface definition language
+
+#### 如何解决增加接口和通信函数问题
+
+字段编号系统：Proto使用数字标签（field numbers）而非字段名称进行序列化，这使得：
+可以随时添加新字段（只要给定新的字段编号）
+旧客户端遇到未知字段时可以安全跳过
+可以重命名字段而不影响序列化格式
+字段可以标记为optional，使不存在的字段不占用空间
+
+向前/向后兼容性：
+添加新字段时，旧客户端会忽略这些字段
+删除字段时，只要不重用字段编号，新客户端仍能读取旧数据
+
+Thrift的方案：
+与Protocol Buffers类似，使用字段标签系统
+提供更丰富的数据类型（包括专门的列表类型）
+支持多种序列化格式（二进制协议、紧凑协议等）
+
+
+
+**cwgo是一个根绝IDL比如proto和thrift生成代码的工具，是cloudwego框架的一部分**
+
+使用需要下载cwgo: `GOPROXY=https://goproxy.cn/,direct go install github.com/cloudwego/cwgo@latest`
+
+https://github.com/cloudwego/cwgo
+
+https://github.com/cloudwego/thriftgo
+
+
+
+cwgo支持zsh终端自动补全功能： https://www.cloudwego.io/docs/cwgo/tutorials/auto-completion/
+
+```bash
+cwgo server --type RPC --idl echo.thrift --module github.com/charleschile/TikTok-E-Commerce-Gomall/tutorial/demo_thrift --service demo_thrift
+
+go mod tidy
+```
+
+![cwgo generate](img/cwgo%20generate.png)
+
+biz是一些业务相关的代码，业务逻辑在service下面
+
+conf是配置文件
+
+Kitex_gen是idl生成的代码
+
+
+
+
+
+
+
+go work use . 命令的作用是将当前目录添加到 Go 工作区（workspace）中。
+
+具体解释：
+
+1. Go 工作区（workspace）：Go 1.18 引入的功能，通过 go.work 文件管理多模块开发环境
+
+1. go work use . 的作用：
+
+- 将当前目录（.）添加到工作区中
+
+- 如果当前目录下有 go.mod 文件，这个模块将被包含在工作区内
+
+- 如果 go.work 文件不存在，会自动创建
+
+1. 工作区的好处：
+
+- 允许同时处理多个相关模块
+
+- 无需修改每个模块的 go.mod 来相互引用
+
+- 便于本地开发多个相互依赖的模块
+
+1. 使用场景：
+
+- 当你有多个相关的 Go 模块需要同时开发
+
+- 当你需要在本地修改某个依赖库并立即测试主项目
+
+例如，如果你有一个主项目和几个本地库模块，使用工作区可以让你在不发布这些库的情况下，让主项目直接使用本地版本的库代码。
+
+
+
+运行：
+
+```bash
+go mod tidy
+go work use. # 注意如果没有go.work的话需要go work init
+go run .
+```
+
+
+
+Protobuf protoc: https://github.com/protocolbuffers/protobuf/releases
+
+或者直接使用brew: `brew install protobuf`
+
+`protoc --version`
+
+
+
+如果依赖有不兼容的，去go.mod中找到它，然后在终端go get 这个就行了
+
+
+
+```bash
+cwgo server -I ../../idl --type RPC --module github.com/charleschile/TikTok-E-Commerce-Gomall/tutorial/demo_proto --service demo_proto --idl ../../idl/echo.proto 
+```
+
+
+
+Makefile可以减少命令的重复输入
+
+
+
+
+
+#### .PHONY
+
+`.PHONY` 在 Makefile 中用于声明"伪目标"（phony targets），具体含义如下：
+
+## `.PHONY` 的作用
+
+1. **防止与文件名冲突**：
+   - 告诉 `make` 命令，即使当前目录下存在同名文件，也应将该目标视为命令而非文件
+   - 确保目标总是被执行，不论同名文件是否存在或是否更新
+
+2. **提高执行效率**：
+   - 避免 make 检查文件时间戳来判断是否需要重新构建
+   - 跳过文件依赖关系检查，直接执行命令
+
+## 使用场景示例
+
+如果没有声明 `.PHONY`，可能发生以下问题：
+
+```makefile
+clean:
+	rm -f *.o
+```
+
+如果目录中恰好存在名为 `clean` 的文件，执行 `make clean` 时：
+- make 会检查 `clean` 文件是否需要更新
+- 发现没有依赖，认为 `clean` 已是最新，不执行任何操作
+
+使用 `.PHONY` 后：
+
+```makefile
+.PHONY: clean
+clean:
+	rm -f *.o
+```
+
+这样无论是否存在 `clean` 文件，`make clean` 都会执行清理操作。
+
+## 常见的伪目标
+
+通常这些目标需要声明为 `.PHONY`：
+- `all`、`build`、`clean`、`install`
+- `test`、`lint`、`fmt`
+- `run`、`deploy`
+- 其他不产生同名文件的命令性目标
+
+这是 Makefile 的最佳实践，可以避免潜在的问题并使意图更加明确。
+
+
+
+
+
+
+
+#### makefile
+
+## Makefile 分析
+
+这个 Makefile 主要用于自动化生成基于不同 IDL（接口定义语言）的 RPC 服务代码。
+
+### 整体作用
+
+这个 Makefile 定义了两个目标：
+1. `gen-demo-proto`：生成基于 Protocol Buffers 的 RPC 服务代码
+2. `gen-demo-thrift`：生成基于 Thrift 的 RPC 服务代码
+
+通过执行 `make gen-demo-proto` 或 `make gen-demo-thrift` 可以快速生成对应的代码，避免手动输入复杂的命令。
+
+### 特殊符号解释
+
+1. `@` 符号：
+   - 位于命令行开头
+   - 作用：**抑制命令回显**——执行时不会在终端打印该命令本身
+   - 如果没有 `@`，make 会先打印命令再执行它
+
+2. `&&` 符号：
+   - Shell 中的**命令连接符**
+   - 作用：表示逻辑与关系，只有当前一个命令成功执行（返回值为0）后，才会执行后面的命令
+   - 在这里，它的含义是：先切换到指定目录，然后在该目录下执行 cwgo 命令
+
+例如，这行：
+```makefile
+@cd tutorial/demo_proto && cwgo server -I ../../idl --type RPC ...
+```
+表示：先静默切换到 `tutorial/demo_proto` 目录，如果成功则执行后面的 `cwgo` 命令。
+
+### 改进建议
+
+这个 Makefile 结构清晰，但可以考虑添加：
+1. 默认目标（如 `all`）来同时生成两种代码
+2. `clean` 目标来清理生成的代码
+3. 使用变量定义重复的部分，提高可维护性
+
+整体来说，这是一个功能明确、结构简洁的 Makefile，很好地服务于 CloudWeGo 框架下的代码生成需求。
+
+
+
+
 
 
 
