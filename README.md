@@ -386,6 +386,68 @@ clean:
 
 
 
+### 03服务注册和服务发现
+
+#### 为什么需要服务注册和服务发现 service registry and service discovery
+
+微服务拆分后，为了提高一组应用的整体性能和处理能力，通常部署在多台服务器上
+
+这种分布式部署，比如
+
+![distribution](img/distribution.png)
+
+
+
+A会调用B的接口，首先要知道B在哪台服务器上
+
+B服务会新增机器，改代码和配置文件都需要人工介入
+
+
+
+
+
+#### 如何实现
+
+可以将C写入A的代码或者配置中，B服务的变更只需要告知C，C作为统一入口调用B
+
+C在内部维护了实例列表
+
+增加了维护了成本，IP资源有限，C形成了新的单点违背了微服务的初衷 
+
+![registry](img/registry.png)
+
+
+
+
+
+
+
+LB：load balance 负载均衡
+
+
+
+
+
+![improved registry](img/improved%20registry.png)
+
+
+
+
+
+#### 如何选择注册中心
+
+
+
+分布式CAP：工程实现中只能满足其二
+
+C：consistency 一致性
+
+A：availablility 可用性
+
+P：partition tolerence 分区容错性
+
+![chooseregistry](img/chooseregistry.png)
+
 
 
 
