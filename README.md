@@ -489,4 +489,78 @@ consul客户端成功启动：
 
 
 
-然后编写客户端
+然后在cmd/client/client.go中编写客户端
+
+客户端成功找到服务端
+
+![image-20250510164914895](../../../Library/Application%20Support/typora-user-images/image-20250510164914895.png)
+
+
+
+#### Consul的服务注册发现分析
+
+consul在系统中的作用是：
+
+1. 服务注册中心：记录所有的服务地址、状态和元数据
+2. 服务发现：帮助客户端找到可用的服务实例
+
+
+
+##### 1. 服务端（main.go）
+
+```go
+// 服务注册相关代码
+r, err := consul.NewConsulRegister(conf.GetConf().Registry.RegistryAddress[0])
+if err != nil {
+    klog.Fatal(err)
+}
+opts = append(opts, server.WithRegistry(r))
+```
+
+
+
+- 提供 Echo RPC 服务的实际实现
+
+- 在启动时向 Consul 注册自己
+
+- 定期发送心跳告知 Consul 自己仍然存活
+
+- 服务停止时，会从 Consul 注销自己
+
+1. 创建 ConsulRegister 实例连接 Consul 服务
+2. 将注册器添加到服务选项中
+3. 服务启动时自动注册，包含服务名称(demo_proto)、地址、端口等信息
+
+##### 2. 客户端
+
+```go
+r, err := consul.NewConsulResolver(conf.GetConf().Registry.RegistryAddress[0])
+	if err != nil {
+		panic(err)
+	}
+	// 找服务的名字需要改成demo_proto
+	// 发起 RPC 调用时，解析器从 Consul 获取服务地址
+	// 如果 Consul 返回多个健康的服务实例，resolver 会使用负载均衡策略选择一个
+	client, err := echoservice.NewClient("demo_proto", client.WithResolver(r))
+	if err != nil {
+		panic(err)
+	}
+	// 通过consul得到服务之后，直接通过rpc调用Echo服务
+	res, err := client.Echo(context.Background(), &pbapi.Request{Message: "hello"})
+```
+
+- 通过服务名称(demo_proto)从 Consul 查询可用服务
+
+- 实现负载均衡（如果有多个服务实例）
+
+- 自动处理服务端故障转移
+
+1. 创建 ConsulResolver 连接 Consul
+2. 创建客户端时指定要访问的服务名称
+3. 发起 RPC 调用时，解析器从 Consul 获取服务地址
+4. 如果有多个实例，解析器会使用负载均衡策略选择一个
+
+
+
+
+

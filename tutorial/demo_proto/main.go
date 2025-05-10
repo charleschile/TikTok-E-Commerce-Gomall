@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
 
+	// 注意教程中是kitex下的consul包而不是hertz下的
 	// "github.com/hertz-contrib/registry/consul"
 	kitexlogrus "github.com/kitex-contrib/obs-opentelemetry/logging/logrus"
 	consul "github.com/kitex-contrib/registry-consul"
