@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charleschile/TikTok-E-Commerce-Gomall/tutorial/demo_proto/biz/model"
 	"github.com/charleschile/TikTok-E-Commerce-Gomall/tutorial/demo_proto/conf"
 
 	"gorm.io/driver/mysql"
@@ -38,6 +39,8 @@ func Init() {
 		panic(err)
 	}
 
+	DB.AutoMigrate(&model.User{})
+
 	type Version struct {
 		Version string
 	}
@@ -50,4 +53,6 @@ func Init() {
 		panic(err)
 	}
 	fmt.Println(v.Version)
+
+	// fmt.Printf("%#v", DB.Debug().Exec("select version()"))
 }

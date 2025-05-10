@@ -55,7 +55,7 @@ vscode插件
 | **Go**               | 提供 Go 语言的语法高亮、自动补全、调试支持。|
 | **Golang Tools**     | 依赖 Go 插件，包含 lint、format、test 等开发辅助工具集。|
 | **Docker**           | 支持容器开发，提供 Dockerfile、docker-compose 支持与容器管理功能。|
-| **MySQL**            | 用于连接和管理 MySQL 数据库（例如 SQLTools 或类似插件）。|
+| **MySQL**(cweijan)   | 用于连接和管理 MySQL 数据库（例如 SQLTools 或类似插件）。|
 | **Material Icon Theme** | 更美观的文件图标主题，提升文件识别效率。|
 | **YAML**             | 支持 YAML 文件语法高亮、校验、自动补全等功能，常用于配置文件。|
 | **vscode-proto3**    | 提供 `.proto` 文件（Protocol Buffers v3）语法支持，包括高亮和代码提示。|
@@ -650,6 +650,109 @@ etcd：k8s的底层存储，元数据
 很多情况下，配置中心和注册中心会选同一个，更方便，维护成本低
 
 ![config center](img/config%20center.png)
+
+
+
+
+
+## 05 使用orm进行数据操作
+
+Tutorial: accessing a relational database
+
+非使用orm，go官方文档：https://go.dev/doc/tutorial/database-access
+
+
+
+cloudwego使用gorm
+
+1. 环境改造和确认：docker compose .env
+2. biz新增model文件，创建user数据模型
+3. dal数据库初始化时支持迁移
+4. demo_proto下增加增删改查代码
+
+
+
+auto migration自动迁移可以补全缺失的表和各种外键信息
+
+```go
+DB.AutoMigrate(&model.User{})
+```
+
+
+
+![user](img/user.png)
+
+注意查看GORM官方文档即可
+
+CRUD:
+
+```go
+	// CRUD
+	// 创建对象
+	// mysql.DB.Create(&model.User{Email: "demo@example.com", Password: "12345"})
+	// 修改数据
+	// mysql.DB.Model(&model.User{}).Where("email = ?", "demo@example.com").Update("password", "2222222222")
+
+	// // 读取数据：first读取一行，find是读取多行记录
+	// var row model.User
+	// mysql.DB.Model(&model.User{}).Where("email = ?", "demo@example.com").First(&row)
+	// fmt.Printf("row: %+v\n", row)
+
+	// // 删除数据
+	// mysql.DB.Where("email = ?", "demo@example.com").Delete(&model.User{})
+
+	// 强制删除
+	mysql.DB.Unscoped().Where("email = ?", "demo@example.com").Delete(&model.User{})
+```
+
+
+
+
+
+go中`fmt`包中有格式化动词（formatting verb），用于打印结构体的详细信息
+
+```go
+type Person struct {
+    Name string
+    Age  int
+}
+
+person := Person{Name: "张三", Age: 25}
+
+
+fmt.Printf("%v\n", person)   // 输出: {张三 25}
+fmt.Printf("%+v\n", person)  // 输出: {Name:张三 Age:25}
+fmt.Printf("%#v\n", person)  // 输出: main.Person{Name:"张三", Age:25}
+```
+
+
+
+注意gorm使用DeletedAt这个字段来标记数据是否删除，是`软删除(soft delete)`！
+
+![soft delete](img/soft%20delete.png)
+
+```go
+// 删除用户 - 实际执行的是软删除
+db.Delete(&user)  // 设置 DeletedAt 字段为当前时间
+
+// 查询时自动过滤已软删除的记录
+db.Find(&users)   // WHERE deleted_at IS NULL
+
+// 查询包括已删除记录
+db.Unscoped().Find(&users)  // 不过滤 deleted_at
+
+// 永久删除
+db.Unscoped().Delete(&user)  // 真正从数据库中删除记录
+
+// 恢复已删除的记录
+db.Unscoped().Model(&user).Update("deleted_at", nil)
+```
+
+
+
+
+
+
 
 
 
