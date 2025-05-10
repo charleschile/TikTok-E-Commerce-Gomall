@@ -463,7 +463,7 @@ P：partition tolerence 分区容错性
 2. 然后用docker启动一个consul注册中心
 3. 最后编写一个客户端代码，代码要发现proto服务实例，并且进行接口调用
 
-```http
+```bash
 https://www.cloudwego.io/docs/hertz/tutorials/third-party/service_discovery/consul/
 ```
 
@@ -493,7 +493,7 @@ consul客户端成功启动：
 
 客户端成功找到服务端
 
-![image-20250510164914895](../../../Library/Application%20Support/typora-user-images/image-20250510164914895.png)
+![client success](img/client%20success.png)
 
 
 
