@@ -4,6 +4,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/charleschile/TikTok-E-Commerce-Gomall/tutorial/demo_proto/biz/dal"
 	"github.com/charleschile/TikTok-E-Commerce-Gomall/tutorial/demo_proto/conf"
 	"github.com/charleschile/TikTok-E-Commerce-Gomall/tutorial/demo_proto/kitex_gen/pbapi/echoservice"
 	"github.com/cloudwego/kitex/pkg/klog"
@@ -12,6 +13,7 @@ import (
 
 	// 注意教程中是kitex下的consul包而不是hertz下的
 	// "github.com/hertz-contrib/registry/consul"
+	"github.com/joho/godotenv"
 	kitexlogrus "github.com/kitex-contrib/obs-opentelemetry/logging/logrus"
 	consul "github.com/kitex-contrib/registry-consul"
 	"go.uber.org/zap/zapcore"
@@ -19,11 +21,18 @@ import (
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		klog.Fatal("Error loading .env file")
+		panic(err)
+	}
+	dal.Init()
+
 	opts := kitexInit()
 
 	svr := echoservice.NewServer(new(EchoServiceImpl), opts...)
 
-	err := svr.Run()
+	err = svr.Run()
 	if err != nil {
 		klog.Error(err.Error())
 	}

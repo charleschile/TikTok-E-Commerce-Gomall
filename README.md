@@ -6,7 +6,7 @@
 
 
 
-### 00项目总体介绍
+## 00项目总体介绍
 
 Kitex：go的rpc框架
 
@@ -45,7 +45,7 @@ volo：rust rpc框架
 
 ![design](img/design.png)
 
-### 01开发环境
+## 01开发环境
 hertz是http框架，适用于和用户交互的，所以先生成一个hello world
 
 vscode插件
@@ -168,7 +168,13 @@ go mod tidy 命令的作用是整理和清理项目的依赖关系。具体功�
 ![helloworld](img/helloworld.png)
 
 
-### 03脚手架scaffold
+
+
+
+
+
+
+## 02脚手架scaffold
 IDL: interface definition language
 
 #### 如何解决增加接口和通信函数问题
@@ -386,7 +392,7 @@ clean:
 
 
 
-### 03服务注册和服务发现
+## 03服务注册和服务发现
 
 #### 为什么需要服务注册和服务发现 service registry and service discovery
 
@@ -559,6 +565,101 @@ r, err := consul.NewConsulResolver(conf.GetConf().Registry.RegistryAddress[0])
 2. 创建客户端时指定要访问的服务名称
 3. 发起 RPC 调用时，解析器从 Consul 获取服务地址
 4. 如果有多个实例，解析器会使用负载均衡策略选择一个
+
+
+
+
+
+
+
+## 04 服务配置管理
+
+常见配置：文件配置、环境变量配置、配置中心配置所有配置
+
+file config文件配置：配置写在文件中
+
+文件配置：YAML, JSON, TOML
+
+YAML配置：放在conf文件夹下
+
+
+
+Env config环境变量：
+
+Linux env: export APP_ENV=online
+
+.env文件：APP_ENV=online
+
+Docker env: ENV GO_ENV=online
+
+K8s env: 容器运行时k8s 环境变量->config map(开关，业务数据) / separate(加密的东西，密码密钥)
+
+```yaml
+env:
+	- name: APP_ENV
+		value: "online"
+	- name: APP_SECRET
+```
+
+
+
+docker中iamge尽量不要使用“latest”作为版本号，而是要锁定一个版本号
+
+
+
+要查看docker中的mysql：
+```bash
+docker-compose exec mysql bash
+mysql -u root -p
+# 输入密码root
+
+mysql> select version() as version;
++---------+
+| version |
++---------+
+| 9.3.0   |
++---------+
+1 row in set (0.001 sec)
+```
+
+
+
+```go
+type Version struct {
+		Version string
+	}
+	var v Version
+	// “as version”将查询结果设置成了字段version
+	// gorm会自动将字段名与结构体中的字段名匹配，并且不区分大小写
+	// 所以SQL查询结果的version会被影射到v中的Version字段
+	err = DB.Raw("select version() as version").Scan(&v).Error
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(v.Version)
+```
+
+
+
+
+
+配置中心：
+
+etcd：k8s的底层存储，元数据
+
+很多情况下，配置中心和注册中心会选同一个，更方便，维护成本低
+
+![config center](img/config%20center.png)
+
+
+
+
+
+
+
+
+
+
 
 
 

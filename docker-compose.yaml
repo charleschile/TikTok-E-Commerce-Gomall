@@ -4,3 +4,12 @@ services:
     image: 'hashicorp/consul'
     ports:
       - 8500:8500
+  mysql:
+    image: 'mysql:latest'
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=test     # 创建名为"test"的数据库
+      - MYSQL_USER=gorm         # 可选：创建一个普通用户
+      - MYSQL_PASSWORD=gorm     # 可选：设置用户密码
