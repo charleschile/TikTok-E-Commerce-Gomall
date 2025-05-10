@@ -4,12 +4,15 @@ import (
 	"net"
 	"time"
 
+	"github.com/charleschile/TikTok-E-Commerce-Gomall/tutorial/demo_proto/conf"
+	"github.com/charleschile/TikTok-E-Commerce-Gomall/tutorial/demo_proto/kitex_gen/pbapi/echoservice"
 	"github.com/cloudwego/kitex/pkg/klog"
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
+
+	// "github.com/hertz-contrib/registry/consul"
 	kitexlogrus "github.com/kitex-contrib/obs-opentelemetry/logging/logrus"
-	"github.com/charleschile/TikTok-E-Commerce-Gomall/tutorial/demo_proto/conf"
-	"github.com/charleschile/TikTok-E-Commerce-Gomall/tutorial/demo_proto/kitex_gen/pbapi/echoservice"
+	consul "github.com/kitex-contrib/registry-consul"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
@@ -37,6 +40,25 @@ func kitexInit() (opts []server.Option) {
 	opts = append(opts, server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{
 		ServiceName: conf.GetConf().Kitex.Service,
 	}))
+
+	// config := consulapi.DefaultConfig()
+	// // 可以从配置文件中读取 Consul 地址，这里示例使用默认配置
+	// // consulConfig.Address = conf.GetConf().Consul.Address
+	// // 也可以直接指定地址
+	// // config.Address = "127.0.0.1:8500"
+	// consulClient, err := consulapi.NewClient(config)
+	// if err != nil {
+	// 	klog.Fatal(err)
+	// 	return
+	// }
+
+	// r, err := consul.NewConsulRegister("127.0.0.1:8500")
+
+	r, err := consul.NewConsulRegister(conf.GetConf().Registry.RegistryAddress[0])
+	if err != nil {
+		klog.Fatal(err)
+	}
+	opts = append(opts, server.WithRegistry(r))
 
 	// klog
 	logger := kitexlogrus.NewLogger()

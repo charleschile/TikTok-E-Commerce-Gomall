@@ -448,7 +448,45 @@ P：partition tolerence 分区容错性
 
 ![chooseregistry](img/chooseregistry.png)
 
+**CAP定理指出：一个分布式系统不可能同时满足以下三个特性中的两个以上：**
+
+- **一致性（Consistency）**：一致性指的是，不管客户端连接到哪个节点，所有客户端在同一时间看到的数据都是一致的。
+- **可用性（Availability）**：可用性指的是，只要客户端发起请求，即使某些节点宕机了，也能得到响应。
+- **分区容忍性（Partition Tolerance）**：分区是指两个节点之间通信中断。分区容忍性意味着即使网络发生分区，系统仍能继续运行。
 
 
 
+要点：
 
+1. 以demo proto作为服务端改造一些服务注册的代码
+
+2. 然后用docker启动一个consul注册中心
+3. 最后编写一个客户端代码，代码要发现proto服务实例，并且进行接口调用
+
+```http
+https://www.cloudwego.io/docs/hertz/tutorials/third-party/service_discovery/consul/
+```
+
+```bash
+go get github.com/hertz-contrib/registry/consul
+```
+
+引入consul组件
+
+注意`main.go`里面放的是服务启动的代码
+
+
+
+编写docker compose去docker hub搜索查看对应的版本即可: https://hub.docker.com/search
+
+
+
+注意现在的consul被迁移到hertz下了，原先在kitex下，这是两个完全不同的包，里面使用的参数也不一样
+
+consul客户端成功启动：
+
+![consul start](img/consul%20start.png)
+
+
+
+然后编写客户端
